@@ -69,6 +69,7 @@ touch .github/workflows/ci.yml
 1. Inside the api folder, install Express:
 ```
 npm install express
+npm install jest
 ```
 ![](./img/2b.install.express.png)
 
@@ -242,4 +243,12 @@ jobs:
           cd webapp
           npm run build
 ```
+
++ Commit and push the changes:
+```
+git add .
+git commit -m "Initial project setup"
+git push origin main
+```
+
 

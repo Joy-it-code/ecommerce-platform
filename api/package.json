@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "jest --detectOpenHandles --forceExit --runInBand"
+    "test": "sh node_modules/.bin/jest --detectOpenHandles --forceExit --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -16,8 +16,8 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "supertest": "^7.0.0",
-    "nodemon": "^3.0.0"
+    "nodemon": "^3.0.0",
+    "supertest": "^7.0.0"
   },
   "jest": {
     "testEnvironment": "node"
