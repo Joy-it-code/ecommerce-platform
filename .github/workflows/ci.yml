@@ -1,0 +1,38 @@
+name: CI Pipeline
+
+on: push
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: |
+          cd api
+          npm install
+      - name: Run tests
+        run: |
+          cd api
+          npm test
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: |
+          cd webapp
+          npm install
+      - name: Build application
+        run: |
+          cd webapp
+          npm run build
