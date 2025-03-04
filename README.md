@@ -26,7 +26,8 @@ cd ecommerce-platform
 ![](./img/1a.create.repo.png)
 ![](./img/1b.clone.png)
 
-## 📌 Step 1️⃣.2️⃣:  Initialize Project Structure
+
+## 🔹1️.2:  Initialize Project Structure
 1. Inside the repository, create directories for the backend and frontend: 
 ```
 mkdir api webapp
@@ -104,7 +105,8 @@ node index.js
 ```
 ![](./img/2d.run.locally.png)
 
-## 📌 Step 3️⃣.2️⃣: Implement Unit Tests For API
+
+## 🔹3️.2️: Implement Unit Tests For API
 
 1. Install Jest and Supertest:
 ```
@@ -259,7 +261,7 @@ git push origin main
 
 ## 📌 Step 6️⃣: Docker Integration
 
-+ **6.1 Create Dockerfiles**
+🔹**6.1 Create Dockerfiles**
 
 + Inside the (Backend) api folder, create a Dockerfile:
 ```
@@ -288,10 +290,10 @@ CMD ["npm", "start"]
 EXPOSE 3000
 ```
 ## Step 7️⃣: ☁️ Deployment to Cloud using AWS EC2 
-### Configure Deployment in GitHub Actions (.github/workflow/deploy.yml)
+### Configure Deployment in GitHub Actions (.github/workflow/deploy.yml):
 
 + I deployed the E-commerce platform (backend & frontend) on AWS EC2 instance using Docker and GitHub Actions, 
-using GitHub secrets 🔒 to securely store and access cloud credentials.
+I also use GitHub secrets 🔒 to securely store and access cloud credentials.
 
 + Below is the deployment job for the pipeline:
 ```
@@ -351,6 +353,83 @@ jobs:
           EOF
 ```
 
-## 📌 Step 8: 🌍 Continous Deployment
-This pipeline created above will ensure that whenever there is a push or changes to the main branch, the application is automatically deployed on an AWS EC2 instance using GitHub Actions.
+
+##  Step 8: 🌍 Continous Deployment:
++ I modified the above workflow to ensure that whenever there is a push or change to the main branch, the application is automatically deployed on an AWS EC2 instance using Docker and GitHub Actions.
+
+Using this workflow:
+```
+name: Deploy to AWS EC2 with DockerHub
+
+on:
+  push:
+    branches:
+      - main  # Deploys automatically on push to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            echo "🔹 Connecting to EC2 Instance"
+
+            # Authenticate DockerHub
+            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+            # Pull latest backend API image
+            echo "🚀 Pulling latest API image..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-api:latest
+
+            # Stop and remove existing API container
+            docker stop ecommerce-api || true
+            docker rm ecommerce-api || true
+
+            # Run API container securely
+            echo "✅ Running new API container..."
+            docker run -d --name ecommerce-api -p 5000:5000 \
+              -e API_SECRET=${{ secrets.API_SECRET }} \
+              ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-api:latest
+
+            # Pull latest frontend web image
+            echo "🚀 Pulling latest WebApp image..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-web:latest
+
+            # Stop and remove existing WebApp container
+            docker stop ecommerce-web || true
+            docker rm ecommerce-web || true
+
+            # Run WebApp container securely
+            echo "✅ Running new WebApp container..."
+            docker run -d --name ecommerce-web -p 3000:3000 \
+              -e API_BASE_URL=${{ secrets.API_BASE_URL }} \
+              ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-web:latest
+
+            echo "🚀 Deployment Completed Successfully!"
+          EOF
+```
+
+
+## ✅ Step 9️⃣: Performance and Security 🔒:
+
++ To improve this workflow for performance, I leverage caching for dependencies, Docker layers and test results.
+Caching reduces redundant work and improves execution times, especially in Continous Integration (CI) pipelines.   
+
+Also, using GitHub Secrets to securely store sensitive information like API keys and database credentials, preventing exposure in the codebase.
+
+Here is the enhanced workflow:
+
+
+
+
 
