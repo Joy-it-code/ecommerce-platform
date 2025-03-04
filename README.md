@@ -287,12 +287,13 @@ RUN npm run build
 CMD ["npm", "start"]
 EXPOSE 3000
 ```
-## Step 7️⃣: ☁️ Deployment to Cloud using AWS EC2
+## Step 7️⃣: ☁️ Deployment to Cloud using AWS EC2 
+### Configure Deployment in GitHub Actions (.github/workflow/deploy.yml)
 
-+ I deployed my E-commerce platform (backend & frontend) on an AWS EC2 instance using Docker and GitHub Actions.
++ I deployed the E-commerce platform (backend & frontend) on AWS EC2 instance using Docker and GitHub Actions, 
+using GitHub secrets 🔒 to securely store and access cloud credentials.
 
-+ I used GitHub secrets to securely store and accessed cloud credentials.
-
++ Below is the deployment job for the pipeline:
 ```
 name: Deploy to AWS EC2 with DockerHub
 
@@ -349,4 +350,7 @@ jobs:
             echo "🚀 Deployment Completed Successfully!"
           EOF
 ```
+
+## 📌 Step 8: 🌍 Continous Deployment
+This pipeline created above will ensure that whenever there is a push or changes to the main branch, the application is automatically deployed on an AWS EC2 instance using GitHub Actions.
 
