@@ -13,7 +13,7 @@ The goal is to automate the integration and deployment process for both componen
 
 ## 🛠 Step-by-Step Method
 
-## 📌 Step 1:Set Up Your GitHub Repository
+## 📌 Step 1️⃣:Set Up Your GitHub Repository
 1. Go to GitHub and create a new repository named ecommerce-platform
 
 2. Clone the repository to your local machine:
@@ -26,7 +26,7 @@ cd ecommerce-platform
 ![](./img/1a.create.repo.png)
 ![](./img/1b.clone.png)
 
-## 📌 Step 1.2:  Initialize Project Structure
+## 📌 Step 1️⃣.2️⃣:  Initialize Project Structure
 1. Inside the repository, create directories for the backend and frontend: 
 ```
 mkdir api webapp
@@ -40,7 +40,7 @@ cd api
 npm init -y
 ```
 ![](./img/1d.cd.api.png)
-Backend runs on http://localhost:5000
+Backend api 🌍 runs on: http://localhost:5000
 
 3. Navigate to the frontend folder and create a React app:
 ```
@@ -48,9 +48,9 @@ cd ../webapp
 npx create-react-app .
 ```
 [](./img/1e.cd.web.png)
-Frontend runs on http://localhost:3000
+Frontend webapp 🌍 runs on: http://localhost:3000
 
-## 📌 Step 2: Initialize GitHub Actions
+## 📌 Step 2️⃣: Initialize GitHub Actions
 2.1 Set Up GitHub Actions Directory
 
 1. Inside the repository, create a .github/workflows directory:
@@ -63,8 +63,8 @@ touch .github/workflows/ci.yml
 ```
 ![](./img/2a.gitworkflow.png)
 
-## 📌 Step 3: Backend API Setup
-3.1: Install Dependencies
+## 🖥 Step 3️⃣: Backend API Setup
++ **3.1: Install Dependencies**
 
 1. Inside the api folder, install Express:
 ```
@@ -104,7 +104,7 @@ node index.js
 ```
 ![](./img/2d.run.locally.png)
 
-## 📌 Step 3.2 Implement Unit Tests For API
+## 📌 Step 3️⃣.2️⃣: Implement Unit Tests For API
 
 1. Install Jest and Supertest:
 ```
@@ -140,7 +140,7 @@ describe('API Tests', () => {
 
 ## 4. ✅ Running Tests 🧪:
 
-+ Install new dependencies:
++ **Install new dependencies:**
 ```
 npm install
 ```
@@ -164,7 +164,7 @@ http://localhost:5000
 ```
 ![](./img/2i.localhost.png)
 
-## 📌 Step 4: Frontend Web Application Setup
+## 💻 Step 4️⃣: Frontend Web Application Setup
 ### 🔹4.1 Install Dependencies
 
 + Inside the webapp directory, install React Router:
@@ -199,7 +199,7 @@ http://localhost:3000
 ![](./img/3b.localhost.3000.png)
 
 
-## 📌 Step 5: Continuous Integration Workflow
+## 📌 Step 5️⃣: Continuous Integration Workflow
 
 + Create a CI workflow in .github/workflows/ci.yml
 
@@ -244,6 +244,11 @@ jobs:
           npm run build
 ```
 
++ ✅ Run Test 🧪
+```
+npm test
+```
+
 + Commit and push the changes:
 ```
 git add .
@@ -251,4 +256,97 @@ git commit -m "Initial project setup"
 git push origin main
 ```
 
+
+## 📌 Step 6️⃣: Docker Integration
+
++ **6.1 Create Dockerfiles**
+
++ Inside the (Backend) api folder, create a Dockerfile:
+```
+nano Dockerfile
+```
+```
+FROM node:22-alpine
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm install
+COPY . .
+CMD ["node", "index.js"]
+EXPOSE 5000
+```
+
+
++ Inside the (Frontend) webapp folder, create a Dockerfile:
+```
+FROM node:22
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+RUN npm run build
+CMD ["npm", "start"]
+EXPOSE 3000
+```
+## Step 7️⃣: ☁️ Deployment to Cloud using AWS EC2
+
++ I deployed my E-commerce platform (backend & frontend) on an AWS EC2 instance using Docker and GitHub Actions.
+
++ I used GitHub secrets to securely store and accessed cloud credentials.
+
+```
+name: Deploy to AWS EC2 with DockerHub
+
+on:
+  push:
+    branches:
+      - main  # Change to your deployment branch if different
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            echo "🔹 Connecting to EC2 Instance"
+
+            # Authenticate DockerHub
+            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+            # Pull latest backend API image
+            echo "🚀 Pulling latest API image..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-api:latest
+
+            # Stop and remove existing API container
+            docker stop ecommerce-api || true
+            docker rm ecommerce-api || true
+
+            # Run API container
+            echo "✅ Running new API container..."
+            docker run -d --name ecommerce-api -p 5000:5000 ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-api:latest
+
+            # Pull latest frontend web image
+            echo "🚀 Pulling latest WebApp image..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-web:latest
+
+            # Stop and remove existing WebApp container
+            docker stop ecommerce-web || true
+            docker rm ecommerce-web || true
+
+            # Run WebApp container
+            echo "✅ Running new WebApp container..."
+            docker run -d --name ecommerce-web -p 3000:3000 ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-web:latest
+
+            echo "🚀 Deployment Completed Successfully!"
+          EOF
+```
 

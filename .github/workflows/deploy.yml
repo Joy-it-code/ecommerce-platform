@@ -1,0 +1,54 @@
+name: Deploy to AWS EC2 with DockerHub
+
+on:
+  push:
+    branches:
+      - main  # Change to your deployment branch if different
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            echo "🔹 Connecting to EC2 Instance"
+
+            # Authenticate DockerHub
+            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+            # Pull latest backend API image
+            echo "🚀 Pulling latest API image..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-api:latest
+
+            # Stop and remove existing API container
+            docker stop ecommerce-api || true
+            docker rm ecommerce-api || true
+
+            # Run API container
+            echo "✅ Running new API container..."
+            docker run -d --name ecommerce-api -p 5000:5000 ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-api:latest
+
+            # Pull latest frontend web image
+            echo "🚀 Pulling latest WebApp image..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-web:latest
+
+            # Stop and remove existing WebApp container
+            docker stop ecommerce-web || true
+            docker rm ecommerce-web || true
+
+            # Run WebApp container
+            echo "✅ Running new WebApp container..."
+            docker run -d --name ecommerce-web -p 3000:3000 ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-web:latest
+
+            echo "🚀 Deployment Completed Successfully!"
+          EOF
