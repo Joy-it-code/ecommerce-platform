@@ -355,7 +355,7 @@ jobs:
 
 
 ##  Step 8: 🌍 Continous Deployment:
-+ I modified the above workflow to ensure that whenever there is a push or change to the main branch, the application is automatically deployed on an AWS EC2 instance using Docker and GitHub Actions.
++ I modified the above workflow to ensure Automatic Deployment on Push to main, the application is securely deployed on an AWS EC2 instance using GitHub secret and to optimized workflow with Docker.
 
 Using this workflow:
 ```
@@ -425,7 +425,7 @@ jobs:
 + To improve this workflow for performance, I leverage caching for dependencies, Docker layers and test results.
 Caching reduces redundant work and improves execution times, especially in Continous Integration (CI) pipelines.   
 
-Also, using GitHub Secrets to securely store sensitive information like API keys and database credentials, preventing exposure in the codebase.
+I used GitHub Secrets to securely store sensitive information like API keys and database credentials, preventing exposure in the codebase.
 
 Here is the enhanced workflow:
 
