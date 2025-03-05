@@ -425,9 +425,80 @@ jobs:
 + To improve this workflow for performance, I leverage caching for dependencies, Docker layers and test results.
 Caching reduces redundant work and improves execution times, especially in Continous Integration (CI) pipelines.   
 
-I used GitHub Secrets to securely store sensitive information like API keys and database credentials, preventing exposure in the codebase.
++ To prevent exposing credentials, I moved API keys, passwords, and database URLs into GitHub Secrets.
 
 Here is the enhanced workflow:
+```
+name: Deploy to AWS EC2 with DockerHub
+
+on:
+  push:
+    branches:
+      - main  # Deploys automatically on push to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Implement caching to speed up builds
+      - name: Cache Docker Layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # Set up SSH authentication securely
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            echo "🔹 Connecting to EC2 Instance"
+
+            # Authenticate DockerHub securely
+            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+            # Pull latest backend API image
+            echo "🚀 Pulling latest API image..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-api:latest
+
+            # Stop and remove existing API container
+            docker stop ecommerce-api || true
+            docker rm ecommerce-api || true
+
+            # Run API container securely with environment variables
+            echo "✅ Running new API container..."
+            docker run -d --name ecommerce-api -p 5000:5000 \
+              -e API_SECRET=${{ secrets.API_SECRET }} \
+              ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-api:latest
+
+            # Pull latest frontend web image
+            echo "🚀 Pulling latest WebApp image..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-web:latest
+
+            # Stop and remove existing WebApp container
+            docker stop ecommerce-web || true
+            docker rm ecommerce-web || true
+
+            # Run WebApp container securely with environment variables
+            echo "✅ Running new WebApp container..."
+            docker run -d --name ecommerce-web -p 3000:3000 \
+              -e API_BASE_URL=${{ secrets.API_BASE_URL }} \
+              ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-web:latest
+
+            echo "🚀 Deployment Completed Successfully!"
+          EOF
+```
+
 
 
 
