@@ -498,8 +498,24 @@ jobs:
             echo "🚀 Deployment Completed Successfully!"
           EOF
 ```
+## Step 🔟: Project Documentation
+
++ I listed the various steps, tools, technology and sample code used in this project. It is a good practice document process involved in an assignment. 
 
 
+
+## 📜 Conclusion
+
+This setup ensures automatic deployment, security best practices, and performance optimization with a streamlined CI/CD pipeline. 
+
+
+💡 Author
+
+Joy- *Aspiring DevOps Engineer 🚀*
+
+🔗 GitHub Repository: Joy-it-code/ecommerce-platform
+
+🎉 Happy Coding! 🚀
 
 
 
